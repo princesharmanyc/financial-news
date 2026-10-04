@@ -1,153 +1,213 @@
+import os
 import requests
 import xml.etree.ElementTree as ET
 from datetime import datetime
 
-# Targeted top financial and crypto RSS feeds (100% Free, no custom API keys required)
-FEEDS = {
-    "Stocks & Economy News": "https://yahoo.com",
-    "Crypto Currency Market": "https://coindesk.com"
-}
-
-def fetch_news(feed_name, url):
-    """Fetches raw headlines from free RSS endpoints safely with user-agent masks."""
-    print(f"Initializing connection to: {feed_name}...")
-    news_items = []
+def fetch_crypto_prices():
+    """
+    Fetches live crypto data using CoinGecko's free public API endpoint.
+    Returns a list of top cryptocurrency statistics.
+    """
     try:
-        # User-agent header prevents servers from blocking script requests
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) FrameworkEngine/1.0'}
-        response = requests.get(url, headers=headers, timeout=15)
-        
-        if response.status_code != 200:
-            print(f"Skipping {feed_name}: Received unexpected server status code {response.status_code}")
-            return news_items
-            
-        # Parse XML structure natively without external parser packages
-        root = ET.fromstring(response.content)
-        for item in root.findall('.//item')[:6]:  # Curate top 6 breaking stories per market sector
-            title = item.find('title').text if item.find('title') is not None else "Breaking Market Update"
-            link = item.find('link').text if item.find('link') is not None else "#"
-            pub_date = item.find('pubDate').text if item.find('pubDate') is not None else ""
-            
-            # Truncate timestamps for clean dashboard presentation grid layouts
-            if pub_date:
-                try:
-                    pub_date = pub_date.split(' +')[0].split(' GMT')[0]
-                except Exception:
-                    pass
+        url = "https://coingecko.com"
+        params = {
+            "vs_currency": "usd",
+            "ids": "bitcoin,ethereum,solana,cardano",
+            "order": "market_cap_desc"
+        }
+        response = requests.get(url, params=params, timeout=10)
+        if response.status_code == 200:
+            return response.json()
+    except Exception as e:
+        print(f"Error fetching crypto data: {e}")
+    return []
+
+def fetch_financial_news():
+    """
+    Fetches real-time financial market news via public RSS feeds.
+    Parses out titles, links, and publication dates safely.
+    """
+    news_items = []
+    # Using a reliable, open RSS feed provider for real-time market data
+    rss_urls = [
+        "https://cnbc.com", # Finance News
+        "https://cointelegraph.com"             # Crypto News
+    ]
+    
+    for url in rss_urls:
+        try:
+            response = requests.get(url, timeout=10)
+            if response.status_code == 200:
+                root = ET.fromstring(response.content)
+                for item in root.findall(".//item")[:5]: # Extract top 5 articles per feed
+                    title = item.find("title").text if item.find("title") is not None else "Market Update"
+                    link = item.find("link").text if item.find("link") is not None else "#"
+                    pub_date = item.find("pubDate").text if item.find("pubDate") is not None else ""
                     
-            news_items.append({
-                "title": title,
-                "link": link,
-                "date": pub_date
-            })
-    except Exception as error_context:
-        print(f"Could not extract node elements for {feed_name}: {error_context}")
+                    news_items.append({
+                        "title": title,
+                        "link": link,
+                        "date": pub_date
+                    })
+        except Exception as e:
+            print(f"Error parsing RSS feed {url}: {e}")
+            
     return news_items
 
-def generate_html(all_news):
-    """Compiles curated aggregate headlines into a premium, responsive dark-mode dashboard."""
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")
+def generate_html_website(crypto_data, news_data):
+    """
+    Assembles the collected financial updates into a high-end, responsive static site.
+    Includes explicit layouts for fully automated programmatic display ad placements.
+    """
+    current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
     
-    # Fully responsive architecture optimized using premium Tailwind CSS configurations
+    # Modern, high-conversion financial news UI template
     html_content = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AlphaPulse | Automated Market Intelligence</title>
+    <title>Your Daily Financial Guide - Automated Market Intelligence</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {{ background-color: #0b0f19; color: #f3f4f6; }}
+        .ad-banner {{ background: linear-gradient(90deg, #1e293b 0%, #0f172a 100%); border: 1px dashed #334155; }}
     </style>
 </head>
-<body class="font-sans antialiased min-h-screen flex flex-col justify-between">
+<body class="font-sans antialiased">
 
-    <!-- Top Navigation Framework -->
-    <header class="border-b border-gray-800 bg-gray-900/50 backdrop-blur sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <span class="text-2xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">AlphaPulse</span>
-                <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full font-mono border border-emerald-500/20 tracking-wider font-bold">AUTOMATED ENGINE</span>
+    <!-- Brand Header Navigation Layout -->
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-emerald-500 text-slate-950 p-2 rounded-lg font-black tracking-wider text-xl">YDFG</div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-white">Your Daily Financial Guide</h1>
+                    <p class="text-xs text-slate-400">Automated Financial & Crypto Data Engine</p>
+                </div>
             </div>
-            <div class="text-xs text-gray-400 font-mono hidden sm:block">
-                System Sync: {current_time}
+            <div class="text-right text-xs text-slate-400 font-mono bg-slate-950 px-3 py-1.5 rounded-md border border-slate-800">
+                System Updated: {current_time}
             </div>
         </div>
     </header>
 
-    <!-- Main Content Stream -->
-    <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-8">
+    <main class="max-w-7xl mx-auto px-4 py-8">
         
-        <!-- Premium Native Non-Intrusive Monetization Segment Placeholder -->
-        <div class="mb-8 p-4 bg-gradient-to-r from-gray-900 to-gray-800 rounded-xl border border-gray-800 text-center">
-            <span class="text-[9px] uppercase tracking-widest text-gray-500 block mb-1 font-bold">Market Sponsor Context</span>
-            <div class="text-xs text-gray-400 italic">
-                [Monetization Optimization Slot: Future programmatic contextual ad code or premium financial product banner placement]
+        <!-- TOP MONETIZATION ZONE: PROGRAMMATIC DISPLAY AD POSITION -->
+        <!-- This banner container automatically fills with ads via Google AdSense or premium exchanges -->
+        <div class="ad-banner rounded-xl p-4 mb-8 text-center max-w-4xl mx-auto">
+            <span class="text-[10px] uppercase tracking-widest text-slate-500 block mb-2">Sponsored Advertisement</span>
+            <div class="min-h-[90px] flex items-center justify-between text-slate-400 text-sm border border-slate-800 bg-slate-950/40 rounded p-4">
+                <p class="text-left font-medium text-xs text-slate-300">📈 Passive Income Node Active</p>
+                <span class="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded font-mono">AdSense Placeholder (728x90 Billboard)</span>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-"""
-    
-    for category, items in all_news.items():
-        html_content += f"""
-            <!-- Market Category Block -->
-            <section class="space-y-4">
-                <div class="flex items-center space-x-2 pb-2 border-b border-gray-800">
-                    <h2 class="text-md font-bold text-gray-100 uppercase tracking-wide">{category}</h2>
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                </div>
-                <div class="space-y-3">
-"""
-        if not items:
-            html_content += """
-                    <div class="p-4 bg-gray-900/30 rounded-lg text-xs text-gray-500 italic border border-gray-800/40">
-                        Queue empty. Fetch mechanism retry executing automatically during upcoming cloud cycle.
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left & Middle Column: Dynamic Market Intelligence Feed -->
+            <div class="lg:col-span-2 space-y-8">
+                <section>
+                    <div class="flex items-center gap-2 mb-4 border-b border-slate-800 pb-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <h2 class="text-lg font-bold text-white uppercase tracking-wider">Live Streaming Market Feeds</h2>
                     </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        """
+    
+    # Render Crypto Cards dynamically
+    if crypto_data:
+        for coin in crypto_data:
+            change_color = "text-emerald-400" if coin['price_change_percentage_24h'] >= 0 else "text-rose-400"
+            html_content += f"""
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl hover:border-slate-700 transition">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-bold text-slate-200 text-base">{coin['name']} ({coin['symbol'].upper()})</span>
+                                <span class="text-xs font-mono bg-slate-950 px-2 py-0.5 rounded border border-slate-800 text-slate-400">24h Feed</span>
+                            </div>
+                            <div class="text-2xl font-extrabold text-white">${coin['current_price']:,}</div>
+                            <div class="text-sm font-semibold {change_color} mt-1">
+                                {coin['price_change_percentage_24h']:.2f}%
+                            </div>
+                        </div>
             """
-        else:
-            for item in items:
-                html_content += f"""
-                    <a href="{item['link']}" target="_blank" rel="noopener noreferrer" class="block p-4 bg-gray-900/40 hover:bg-gray-900/80 border border-gray-800/60 hover:border-gray-700/80 rounded-xl transition duration-150 group">
-                        <h3 class="text-sm font-medium text-gray-200 group-hover:text-emerald-400 transition-colors line-clamp-2 leading-relaxed">{item['title']}</h3>
-                        <span class="text-[11px] text-gray-500 font-mono mt-2 block">{item['date']}</span>
-                    </a>
-                """
+    else:
         html_content += """
-                </div>
-            </section>
+                        <div class="col-span-2 text-slate-500 text-sm bg-slate-900/30 rounded-xl p-6 text-center border border-dashed border-slate-800">
+                            Streaming price indicators loading... Next automated batch queued.
+                        </div>
         """
-        
-    html_content += """
-        </div>
 
-        <!-- Monetization Widget Block 2 (Audience Newsletter Funnel Setup) -->
-        <div class="mt-12 p-6 bg-gradient-to-b from-gray-900/40 to-gray-950/20 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div>
-                <h3 class="text-sm font-bold text-gray-200">System Premium Aggregate Channel</h3>
-                <p class="text-xs text-gray-400 mt-0.5">High-impact serverless data arrays synthesized every four hours without structural server load overhead.</p>
+    html_content += """
+                    </div>
+                </section>
+
+                <!-- REAL-TIME CONTEXTUAL ARTICLE INVENTORY -->
+                <section class="space-y-4">
+                    <div class="flex items-center gap-2 border-b border-slate-800 pb-2 mb-4">
+                        <h2 class="text-lg font-bold text-white uppercase tracking-wider">Breaking Breaking News Desk</h2>
+                    </div>
+                    <div class="space-y-3">
+    """
+    
+    # Render News Cards dynamically
+    if news_data:
+        for article in news_data:
+            html_content += f"""
+                        <a href="{article['link']}" target="_blank" class="block bg-slate-900/60 border border-slate-800 hover:border-slate-700 p-4 rounded-xl transition group">
+                            <h3 class="text-base font-semibold text-slate-100 group-hover:text-emerald-400 transition-colors line-clamp-2">{article['title']}</h3>
+                            <p class="text-xs text-slate-500 font-mono mt-2">{article['date']}</p>
+                        </a>
+            """
+    else:
+        html_content += """
+                        <p class="text-slate-500 text-sm italic bg-slate-900/20 p-4 rounded-xl text-center">Parsing automated financial reports...</p>
+        """
+
+    html_content += """
+                    </div>
+                </section>
             </div>
-            <div class="w-full sm:w-auto text-xs bg-gray-900 px-4 py-2.5 rounded-lg border border-gray-800 text-center font-medium text-gray-400 select-none">
-                [Future Automated Revenue Stream Slot]
+
+            <!-- Right Column: Sidebar Monetization & Metrics -->
+            <div class="space-y-6">
+                
+                <!-- SIDEBAR MONETIZATION ZONE: MID-PAGE AD UNIT -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 text-center">
+                    <span class="text-[10px] uppercase tracking-widest text-slate-500 block mb-2">Automated Ad Node</span>
+                    <div class="min-h-[250px] bg-slate-950/80 rounded border border-slate-800 flex flex-col items-center justify-center p-4">
+                        <p class="text-xs text-slate-400 mb-2 font-medium">Native Financial Exchange Unit</p>
+                        <span class="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">AdSense Rectangle (300x250)</span>
+                    </div>
+                </div>
+
+                <!-- Platform Mission Blueprint -->
+                <div class="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-xl p-5">
+                    <h3 class="font-bold text-white mb-2 text-sm uppercase tracking-wider">Platform Operations</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        This environment analyzes, structures, and compiles complex global asset datasets programmatically using open internet protocols. The platform processes high-intent macro data for educational evaluation without editorial human overhead.
+                    </p>
+                </div>
             </div>
         </div>
     </main>
 
-    <!-- Structural Base Matrix -->
-    <footer class="border-t border-gray-800 bg-gray-950 py-6 mt-16 text-center text-[11px] text-gray-500 font-mono">
-        <p>Operational Status: Nominal | Managed Serverless Cloud Framework via GitHub Actions Engine</p>
+    <footer class="border-t border-slate-800 bg-slate-950 mt-16 py-8 text-center text-xs text-slate-500">
+        <p>© 2026 Your Daily Financial Guide. Powered entirely by Serverless GitHub Automation Infrastructure.</p>
     </footer>
 
 </body>
 </html>
 """
-    # Write output matrix file securely into repository root structure
-    with open("index.html", "w", encoding="utf-8") as file_stream:
-        file_stream.write(html_content)
-    print("Process Complete: Single static news system architecture refreshed successfully.")
+    # Write the compiled web data directly to the repository environment
+    with open("index.html", "w", encoding="utf-8") as file:
+        file.write(html_content)
+    print("Site successfully re-built and synchronized at index.html.")
 
 if __name__ == "__main__":
-    aggregated_market_data = {}
-    for feed_title, feed_endpoint in FEEDS.items():
-        aggregated_market_data[feed_title] = fetch_news(feed_title, feed_endpoint)
-    generate_html(aggregated_market_data)
+    print("Initializing serverless web-refresh procedures...")
+    crypto = fetch_crypto_prices()
+    news = fetch_financial_news()
+    generate_html_website(crypto, news)
