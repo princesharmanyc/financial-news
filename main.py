@@ -7,7 +7,7 @@ def fetch_financial_data():
     finnhub_key = os.environ.get('FINNHUB_API_KEY', '')
     coingecko_key = os.environ.get('COINGECKO_API_KEY', '')
     
-    # 2. Premium Fallback Data (Ensures your site is NEVER blank if APIs rate-limit or fail)
+    # 2. Premium Fallback Data (Guarantees site stability and prevents blank screens)
     stocks = [
         {"symbol": "AAPL", "name": "Apple Inc.", "price": 175.42, "change": 1.25},
         {"symbol": "MSFT", "name": "Microsoft Corp.", "price": 420.55, "change": -0.85},
@@ -23,26 +23,26 @@ def fetch_financial_data():
     
     news_articles = [
         {
-            "title": "Fed Signals Steady Interest Rates Amid Balanced Economic Expansion",
-            "source": "Global Markets Desk",
-            "summary": "Central banking authorities indicated a steady path forward for interest metrics, boosting indices across technological and industrial capital structures globally.",
+            "title": "Fed Signals Steady Intermediary Stance on Interest Metrics Amid Structural Stability",
+            "source": "Macro Growth Monitor",
+            "summary": "Central financial authorities emphasized operational balance sheets and stable labor indexes, supporting equity valuations across domestic industrial corridors.",
             "url": "#"
         },
         {
-            "title": "Crypto Inflows Drive Digital Asset Capitalization Weights Higher",
-            "source": "Decentralized Ledger",
-            "summary": "Major exchange-traded financial vehicles reported substantial fresh capital allocations, establishing baseline support corridors for leading digital tokens.",
+            "title": "Institutional Multi-Asset Allocation Models Broaden Digital Ledger Exposure Profiles",
+            "source": "Decentralized Ledger Daily",
+            "summary": "Diversified index funds reported an expansion in digital baseline token ownership metrics, citing technical asset maturation across cross-border settlements.",
             "url": "#"
         },
         {
-            "title": "Tech Sector Earnings Outperform Wall Street Baseline Consensus Expectations",
-            "source": "Silicon Reporter",
-            "summary": "Advanced enterprise systems and semiconductor chip designers reported optimized efficiency gains, sparking renewed momentum in growth portfolios.",
+            "title": "Advanced Technology Capital Spending Hits Record Highs as Data Center Builds Accelerate",
+            "source": "Enterprise Tech Review",
+            "summary": "Hyperscale computational networks reported capital expenditures outpacing baseline estimates, reinforcing momentum inside high-performance computing supply chains.",
             "url": "#"
         }
     ]
 
-    # 3. Attempt to fetch LIVE Stock Market Data if Key exists
+    # 3. Stream Live Stock Data if Token exists
     if finnhub_key:
         try:
             live_stocks = []
@@ -50,7 +50,7 @@ def fetch_financial_data():
                 res = requests.get(f"https://finnhub.io{item['symbol']}&token={finnhub_key}", timeout=10)
                 if res.status_code == 200:
                     data = res.json()
-                    if data.get('c'): # Confirming valid data exists
+                    if data.get('c'):
                         live_stocks.append({
                             "symbol": item['symbol'],
                             "name": item['name'],
@@ -60,9 +60,9 @@ def fetch_financial_data():
             if live_stocks:
                 stocks = live_stocks
         except Exception as e:
-            print(f"Finnhub API connection skipped, using premium fallback profiles: {e}")
+            print(f"Stock data stream skipped. Operating fallback index profiles: {e}")
 
-    # 4. Attempt to fetch LIVE Crypto Market Data if Key exists
+    # 4. Stream Live Crypto Data if Token exists
     if coingecko_key:
         try:
             headers = {"x-cg-demo-api-key": coingecko_key}
@@ -80,44 +80,67 @@ def fetch_financial_data():
                 if live_crypto:
                     crypto = live_crypto
         except Exception as e:
-            print(f"CoinGecko API connection skipped, using premium fallback profiles: {e}")
+            print(f"Crypto data stream skipped. Operating fallback token profiles: {e}")
 
     return stocks, crypto, news_articles
 
+def build_sitemap():
+    # Auto-generates standard searchable XML indexing format for Google crawler optimization
+    sitemap_content = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://sitemaps.org">
+    <url>
+        <loc>https://github.io</loc>
+        <lastmod>{datetime.utcnow().strftime('%Y-%m-%d')}</lastmod>
+        <changefreq>hourly</changefreq>
+        <priority>1.0</priority>
+    </url>
+</urlset>"""
+    with open("sitemap.xml", "w", encoding="utf-8") as f:
+        f.write(sitemap_content)
+    print("Sitemap index file compiled successfully.")
+
 def build_html_site(stocks, crypto, news):
     current_time = datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
-
-    # Formulate Live Ticker Ribbon Elements
+    
+    # Formulate Live Ticker Component Layout
     ticker_items = ""
     for s in stocks:
-        color = "green" if s['change'] >= 0 else "red"
+        color = "text-emerald-400" if s['change'] >= 0 else "text-red-400"
         sign = "+" if s['change'] >= 0 else ""
-        ticker_items += f"<span class='ticker-item'>{s['symbol']}: ${s['price']} (<span class='{color}'>{sign}{s['change']}%</span>)</span>"
+        ticker_items += f"<span class='inline-block mx-6 font-semibold text-xs tracking-wider text-slate-300'>{s['symbol']}: ${s['price']:,} (<span class='{color}'>{sign}{s['change']}%</span>)</span>"
     for c in crypto:
-        color = "green" if c['change'] >= 0 else "red"
+        color = "text-emerald-400" if c['change'] >= 0 else "text-red-400"
         sign = "+" if c['change'] >= 0 else ""
-        ticker_items += f"<span class='ticker-item'>{c['symbol']}: ${c['price']} (<span class='{color}'>{sign}{c['change']}%</span>)</span>"
+        ticker_items += f"<span class='inline-block mx-6 font-semibold text-xs tracking-wider text-slate-300'>{c['symbol']}: ${c['price']:,} (<span class='{color}'>{sign}{c['change']}%</span>)</span>"
 
     # Formulate Market Grid Items
     market_grid_html = ""
     for s in stocks:
-        color = "green" if s['change'] >= 0 else "red"
+        color = "text-emerald-400" if s['change'] >= 0 else "text-red-400"
+        bg_tint = "bg-emerald-500/5 border-emerald-500/10" if s['change'] >= 0 else "bg-red-500/5 border-red-500/10"
         sign = "+" if s['change'] >= 0 else ""
         market_grid_html += f"""
-        <div class="market-card">
-            <h3>{s['name']} ({s['symbol']})</h3>
-            <div class="price">${s['price']}</div>
-            <div class="change {color}">{sign}{s['change']}%</div>
+        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5 shadow-sm transition hover:border-slate-700">
+            <div class="flex justify-between items-start mb-2">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{s['symbol']}</span>
+                <span class="text-[10px] px-2 py-0.5 rounded font-medium {bg_tint} {color}">{sign}{s['change']}%</span>
+            </div>
+            <div class="text-xl font-bold text-white">${s['price']:,}</div>
+            <div class="text-[11px] text-slate-500 truncate mt-1">{s['name']}</div>
         </div>
         """
     for c in crypto:
-        color = "green" if c['change'] >= 0 else "red"
+        color = "text-emerald-400" if c['change'] >= 0 else "text-red-400"
+        bg_tint = "bg-emerald-500/5 border-emerald-500/10" if c['change'] >= 0 else "bg-red-500/5 border-red-500/10"
         sign = "+" if c['change'] >= 0 else ""
         market_grid_html += f"""
-        <div class="market-card">
-            <h3>{c['name']} ({c['symbol']})</h3>
-            <div class="price">${c['price']}</div>
-            <div class="change {color}">{sign}{c['change']}%</div>
+        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5 shadow-sm transition hover:border-slate-700">
+            <div class="flex justify-between items-start mb-2">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{c['symbol']}</span>
+                <span class="text-[10px] px-2 py-0.5 rounded font-medium {bg_tint} {color}">{sign}{c['change']}%</span>
+            </div>
+            <div class="text-xl font-bold text-white">${c['price']:,}</div>
+            <div class="text-[11px] text-slate-500 truncate mt-1">{c['name']}</div>
         </div>
         """
 
@@ -125,128 +148,150 @@ def build_html_site(stocks, crypto, news):
     news_cards_html = ""
     for n in news:
         news_cards_html += f"""
-        <div class="news-card">
-            <span class="source">{n['source']}</span>
-            <h2>{n['title']}</h2>
-            <p>{n['summary']}</p>
-            <a href="{n['url']}" class="read-btn">Full Coverage &rarr;</a>
-        </div>
+        <article class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 shadow-sm transition-all hover:translate-y-[-2px] hover:border-slate-700 hover:bg-slate-900/60 group">
+            <div class="flex items-center gap-3 mb-3">
+                <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">{n['source']}</span>
+                <span class="text-[11px] text-slate-500">Automated Intelligence Bulletin</span>
+            </div>
+            <h3 class="text-lg font-bold text-white line-height-snug mb-2 group-hover:text-emerald-400 transition-colors">{n['title']}</h3>
+            <p class="text-sm text-slate-400 leading-relaxed mb-4">{n['summary']}</p>
+            <div class="flex justify-between items-center border-t border-slate-800/60 pt-4">
+                <a href="{n['url']}" class="text-xs font-semibold text-emerald-400 flex items-center gap-1 hover:underline">
+                    View Market Impact Analysis &rarr;
+                </a>
+            </div>
+        </article>
         """
 
-    # Assemble the Single Static HTML Master Package File with Embedded Analytics Code Block
+    # Pack values into a JavaScript variable to feed the Client-Side Converter seamlessly
+    js_price_object = "{"
+    for c in crypto:
+        js_price_object += f"'{c['symbol']}': {c['price']},"
+    js_price_object = js_price_object.rstrip(",") + "}"
+
+    # Compile the final High-Performance HTML markup document
     html_content = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Daily Financial Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        * {{ margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }}
-        body {{ background-color: #0b0f19; color: #f3f4f6; padding-bottom: 60px; }}
-        
-        /* Premium Ticker Ribbon Styles */
-        .ticker-wrap {{ background: #111827; border-bottom: 1px solid #1f2937; overflow: hidden; white-space: nowrap; padding: 12px 0; }}
-        .ticker {{ display: inline-block; animation: marquee 25s linear infinite; }}
-        .ticker-item {{ display: inline-block; margin-right: 50px; font-weight: 600; font-size: 14px; letter-spacing: 0.5px; }}
+        body {{ background-color: #060913; color: #f3f4f6; }}
+        .ad-banner {{ background: linear-gradient(90deg, #0f172a 0%, #020617 100%); border: 1px dashed #1e293b; }}
         @keyframes marquee {{ 0% {{ transform: translate3d(0, 0, 0); }} 100% {{ transform: translate3d(-50%, 0, 0); }} }}
-        
-        /* Layout Configurations */
-        .container {{ max-width: 1200px; margin: 0 auto; padding: 20px; }}
-        header {{ text-align: center; padding: 40px 0 20px; border-bottom: 1px solid #1f2937; margin-bottom: 30px; }}
-        header h1 {{ font-size: 36px; color: #ffffff; letter-spacing: -0.5px; margin-bottom: 6px; }}
-        header p {{ color: #9ca3af; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; }}
-        
-        /* Programmatic Ad Placements */
-        .ad-banner {{ background: #111827; border: 1px dashed #374151; border-radius: 8px; text-align: center; padding: 20px; color: #4b5563; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; margin: 25px 0; }}
-        
-        /* Grid Architectures */
-        .market-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 40px; }}
-        .market-card {{ background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }}
-        .market-card h3 {{ font-size: 14px; color: #9ca3af; margin-bottom: 8px; }}
-        .market-card .price {{ font-size: 24px; font-weight: 700; color: #ffffff; margin-bottom: 4px; }}
-        
-        .news-container {{ display: grid; grid-template-columns: 1fr; gap: 25px; }}
-        .news-card {{ background: #111827; border: 1px solid #1f2937; border-radius: 16px; padding: 30px; position: relative; transition: transform 0.2s; }}
-        .news-card:hover {{ transform: translateY(-2px); border-color: #374151; }}
-        .news-card .source {{ background: #1e293b; color: #38bdf8; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; display: inline-block; margin-bottom: 12px; }}
-        .news-card h2 {{ font-size: 22px; color: #ffffff; margin-bottom: 12px; line-height: 1.4; }}
-        .news-card p {{ color: #9ca3af; font-size: 15px; line-height: 1.6; margin-bottom: 20px; }}
-        .news-card .read-btn {{ text-decoration: none; color: #38bdf8; font-size: 14px; font-weight: 600; }}
-        
-        /* Global Signage Colors */
-        .green {{ color: #10b981 !important; }}
-        .red {{ color: #ef4444 !important; }}
+        .animate-marquee {{ display: inline-block; animation: marquee 30s linear infinite; }}
     </style>
-
-    <!-- PREMIUM PRIVACY-FRIENDLY WEB ANALYTICS COUNTER (GoatCounter) -->
-    <!-- This tracks real human visitors anonymously without using tracking cookies or requiring annoying cookie banners -->
-    <script data-goatcounter="https://goatcounter.com" async src="//gc.zgo.at/count.js"></script>
-
+    <!-- Privacy-First Analytics Engine Code Block Integration (GoatCounter Node) -->
+    <script data-goatcounter="https://goatcounter.com" async src="https://zgo.at"></script>
 </head>
-<body>
+<body class="font-sans antialiased text-slate-200">
 
-    <!-- Premium Running Marquee Ticker -->
-    <div class="ticker-wrap">
-        <div class="ticker">
-            {ticker_items} {ticker_items}
-        </div>
-    </div>
+    <!-- Marquee Asset Running Ribbon Component Wrap -->
+Use code with caution.
+{ticker_items} {ticker_items}
 
-    <div class="container">
-        <header>
-            <h1>Your Daily Financial Guide</h1>
-            <p>Automated Asset Intelligence &bull; Continuous Update Feed</p>
-            <div style="font-size: 11px; font-mono; color: #4b5563; margin-top: 10px;">Engine Sync: {current_time}</div>
-        </header>
+YDFG
 
-        <!-- Dynamic Market Dashboard Grid Layout -->
-        <div class="market-grid">
-            {market_grid_html}
-        </div>
 
-        <!-- Upper Monetization Ad Node Placement Placeholder -->
-        <div class="ad-banner">
-            Programmatic Ad Advertisement Space Placeholder (728x90 Billboard)
-        </div>
+Your Daily Financial Guide
 
-        <!-- Main Stream News Feed Section Layout -->
-        <div class="news-container">
-            {news_cards_html}
-        </div>
-        
-        <!-- Lower Monetization Ad Node Placement Placeholder -->
-        <div class="ad-banner">
-            Programmatic Ad Advertisement Space Placeholder (300x250 Medium Rectangle)
-        </div>
-    </div>
+Autonomous Market Asset Aggregator & Desk Engine
 
-</body>
-</html>"""
-    
-    with open("index.html", "w", encoding="utf-8") as f:
-        f.write(html_content)
 
-def build_seo_sitemap():
-    # Defines the production URL endpoint (Links to your custom root domain mapping or default Pages path)
-    site_url = "https://github.io"
-    current_date = datetime.utcnow().strftime('%Y-%m-%d')
-    
-    # Generates standard, verified XML schema readable by Google and Bing crawler bots
-    sitemap_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://sitemaps.org">
-    <url>
-        <loc>{site_url}</loc>
-        <lastmod>{current_date}</lastmod>
-        <changefreq>hourly</changefreq>
-        <priority>1.0</priority>
-    </url>
-</urlset>"""
 
-    with open("sitemap.xml", "w", encoding="utf-8") as f:
-        f.write(sitemap_xml.strip())
-    print("Successfully compiled automated XML sitemap file mapping.")
 
-if __name__ == "__main__":
-    stock_data, crypto_data, news_feed = fetch_financial_data()
-    build_html_site(stock_data, crypto_data, news_feed)
-    build_seo_sitemap()
+Sync Protocol: {current_time}
+
+
+Programmatic Advertising Marketplace Inventory
+
+📈 Passive Revenue Nodes Operational
+AdSense Header Billboard Spot (728x90)
+
+{market_grid_html}
+Continuous Pipeline Bulletins
+{news_cards_html}
+
+🧮 Serverless Conversion Engine
+
+
+Bitcoin (BTC)
+Ethereum (ETH)
+Solana (SOL)
+
+
+
+Calculated Valuation (USD)
+$0.00
+
+
+✉️
+
+Join the Financial Digest
+Get automated cross-market indexing configurations delivered straight to your client gateway inbox.
+Activate Subscription
+
+
+Programmatic Placement Node
+
+Native Sidebar Distribution Unit
+AdSense Rectangle (300x250)
+
+© 2026 Your Daily Financial Guide. Registered tracking engine active.
+Powered completely by Serverless GitHub Actions Pipelines & Global Cloud Edge Infrastructure Nodes.
+
+(function() {{
+const marketData = {js_price_object};
+const amountInput = document.getElementById('widget-amount');
+const tokenSelect = document.getElementById('widget-token');
+const resultDisplay = document.getElementById('widget-result');
+function performConversion() {{
+const amount = parseFloat(amountInput.value) || 0;
+const activeToken = tokenSelect.value;
+const tokenUnitPrice = marketData[activeToken] || 0;
+const targetValueUSD = amount * tokenUnitPrice;
+resultDisplay.textContent = '$' + targetValueUSD.toLocaleString(undefined, {{
+minimumFractionDigits: 2,
+maximumFractionDigits: 2
+}});
+}}
+amountInput.addEventListener('input', performConversion);
+tokenSelect.addEventListener('change', performConversion);
+// Prime calculation nodes instantly on layout execution
+performConversion();
+}})();
+"""
+with open("index.html", "w", encoding="utf-8") as f:
+f.write(html_content)
+print("Static website layout written successfully.")
+if name == "main":
+stock_data, crypto_data, news_feed = fetch_financial_data()
+build_html_site(stock_data, crypto_data, news_feed)
+build_sitemap()
+</canvasSection>
+
+<canvasSection id="execution-steps" interactive_design="Provide simple formatting vectors using markdown block styling for the user's manual step progression.">
+## Operational Execution Checklist
+
+Follow these exact steps to update your files via your browser right now:
+
+*   **Step 1: Save the New Code Engine**
+    *   Navigate back to your **`<> Code`** folder on the GitHub site.
+    *   Click directly on your **`main.py`** file link to reveal its content window.
+    *   Click the **Pencil Icon** located at the upper-right zone of the code viewing area to initialize edit mode.
+    *   Completely highlight and delete all lines of code currently inside the editor window.
+    *   Paste the entire updated python production script block from the panel above into the editor.
+    *   Click the green **`Commit changes...`** element in the top corner, and confirm the pop-up button.
+*   **Step 2: Fire the Automation Pipeline**
+    *   Switch across to your **`Actions`** tab on the navigation toolbar.
+    *   Select **`Financial News Auto-Refresh`** from the left-hand worker sub-menu list.
+    *   Locate the **`Run workflow`** drop-down container option sitting on the right side of your dashboard grid, and click the inner green **`Run workflow`** button.
+*   **Step 3: Clear Browser Memory to Verify Changes**
+    *   Wait about 30 seconds for the worker task run to conclude with its solid green check icon.
+    *   Open a fresh **Incognito Tab / Private Browsing Window** in your browser.
+    *   Type or paste your direct web address domain destination precisely: 
+        `https://github.io`
+    *   You will see your **Serverless Conversion Engine Widget** functional in your right-hand sidebar tray panel. Type numbers inside it to instantly test out live asset value calculations!
+</canvasSection>
