@@ -3,11 +3,11 @@ import requests
 from datetime import datetime
 
 def fetch_financial_data():
-    # Gather encrypted API keys from your GitHub Secrets vault environment
+    # Gather API keys from GitHub Secrets
     finnhub_key = os.environ.get('FINNHUB_API_KEY', '').strip()
     coingecko_key = os.environ.get('COINGECKO_API_KEY', '').strip()
     
-    # Premium Fallback Data (Ensures your dashboard layout is never blank)
+    # Base Data Arrays (Fallback Profiles that will ALWAYS show if APIs are empty)
     stocks = [
         {"symbol": "AAPL", "name": "Apple Inc.", "price": 175.42, "change": 1.25},
         {"symbol": "MSFT", "name": "Microsoft Corp.", "price": 420.55, "change": -0.85},
@@ -42,12 +42,13 @@ def fetch_financial_data():
         }
     ]
 
-    # Query live stock data from Finnhub if key exists
+    # Try to fetch Live Stock Data
     if finnhub_key:
+        print("Finnhub API Key found! Attempting live data fetch...")
         try:
             live_stocks = []
             for item in stocks:
-                url = "https://finnhub.io" + item['symbol'] + "&token=" + finnhub_key
+                url = f"https://finnhub.io{item['symbol']}&token={finnhub_key}"
                 res = requests.get(url, timeout=10)
                 if res.status_code == 200:
                     data = res.json()
@@ -60,11 +61,13 @@ def fetch_financial_data():
                         })
             if live_stocks:
                 stocks = live_stocks
+                print("Successfully loaded live stock prices!")
         except Exception as e:
-            print("Finnhub live query skipped: " + str(e))
+            print(f"Finnhub API connection timed out or failed: {e}")
 
-    # Query live cryptocurrency data from CoinGecko if key exists
+    # Try to fetch Live Crypto Data
     if coingecko_key:
+        print("CoinGecko API Key found! Attempting live data fetch...")
         try:
             headers = {"x-cg-demo-api-key": coingecko_key}
             url = "https://coingecko.com"
@@ -81,68 +84,72 @@ def fetch_financial_data():
                     })
                 if live_crypto:
                     crypto = live_crypto
+                    print("Successfully loaded live cryptocurrency data!")
         except Exception as e:
-            print("CoinGecko live query skipped: " + str(e))
+            print(f"CoinGecko API connection timed out or failed: {e}")
 
     return stocks, crypto, news_articles
 
 def build_html_site(stocks, crypto, news):
-    # Formulate running market ticker data text
+    # Formulate Live Ticker Ribbon
     ticker_html = ""
     for s in stocks:
         color = "text-emerald-400" if s['change'] >= 0 else "text-red-400"
         sign = "+" if s['change'] >= 0 else ""
-        ticker_html += "<span class='mx-4 font-semibold'>" + s['symbol'] + ": $" + str(s['price']) + " (<span class='" + color + "'>" + sign + str(s['change']) + "%</span>)</span> •"
+        ticker_html += f"<span class='mx-4 font-semibold'>{s['symbol']}: ${s['price']} (<span class='{color}'>{sign}{s['change']}%</span>)</span> •"
     for c in crypto:
         color = "text-emerald-400" if c['change'] >= 0 else "text-red-400"
         sign = "+" if c['change'] >= 0 else ""
-        ticker_html += "<span class='mx-4 font-semibold'>" + c['symbol'] + ": $" + str(c['price']) + " (<span class='" + color + "'>" + sign + str(c['change']) + "%</span>)</span> •"
+        ticker_html += f"<span class='mx-4 font-semibold'>{c['symbol']}: ${c['price']} (<span class='{color}'>{sign}{c['change']}%</span>)</span> •"
 
-    # Formulate dashboard pricing metric blocks
+    # Formulate Market Card Components
     market_cards_html = ""
     for s in stocks:
         color = "text-emerald-400" if s['change'] >= 0 else "text-red-400"
         bg_color = "bg-emerald-500/5 border-emerald-500/10" if s['change'] >= 0 else "bg-red-500/5 border-red-500/10"
         sign = "+" if s['change'] >= 0 else ""
-        market_cards_html += """
-        <div class="p-4 bg-slate-900 border """ + bg_color + """ rounded-xl shadow-sm">
-            <div class="text-xs font-semibold text-slate-400 uppercase">""" + s['name'] + """</div>
-            <div class="text-xl font-bold text-white mt-1">$""" + str(s['price']) + """</div>
-            <div class="text-xs font-mono mt-0.5 """ + color + """">""" + sign + str(s['change']) + """%</div>
+        market_cards_html += f"""
+        <div class="p-4 bg-slate-900 border {bg_color} rounded-xl shadow-sm">
+            <div class="text-xs font-semibold text-slate-400 uppercase">{s['name']}</div>
+            <div class="text-xl font-bold text-white mt-1">${s['price']}</div>
+            <div class="text-xs font-mono mt-0.5 {color}">{sign}{s['change']}%</div>
         </div>
         """
     for c in crypto:
         color = "text-emerald-400" if c['change'] >= 0 else "text-red-400"
         bg_color = "bg-emerald-500/5 border-emerald-500/10" if c['change'] >= 0 else "bg-red-500/5 border-red-500/10"
         sign = "+" if c['change'] >= 0 else ""
-        market_cards_html += """
-        <div class="p-4 bg-slate-900 border """ + bg_color + """ rounded-xl shadow-sm">
-            <div class="text-xs font-semibold text-slate-400 uppercase">""" + c['name'] + """</div>
-            <div class="text-xl font-bold text-white mt-1">$""" + str(c['price']) + """</div>
-            <div class="text-xs font-mono mt-0.5 """ + color + """">""" + sign + str(c['change']) + """%</div>
+        market_cards_html += f"""
+        <div class="p-4 bg-slate-900 border {bg_color} rounded-xl shadow-sm">
+            <div class="text-xs font-semibold text-slate-400 uppercase">{c['name']}</div>
+            <div class="text-xl font-bold text-white mt-1">${c['price']}</div>
+            <div class="text-xs font-mono mt-0.5 {color}">{sign}{c['change']}%</div>
         </div>
         """
 
-    # Formulate chronological financial news content cards
+    # Formulate News Feeds Cards
     news_html = ""
     for item in news:
-        news_html += """
+        news_html += f"""
         <article class="p-6 bg-slate-900 border border-slate-800 rounded-xl hover:border-slate-700 transition duration-200">
             <div class="inline-block bg-slate-800 text-sky-400 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider mb-3">
-                """ + item['source'] + """
+                {item['source']}
             </div>
-            <h3 class="text-lg font-bold text-white mb-2 leading-snug">""" + item['title'] + """</h3>
-            <p class="text-slate-400 text-sm leading-relaxed mb-4">""" + item['summary'] + """</p>
-            <a href="""" + item['url'] + """" class="text-xs text-sky-400 hover:underline font-semibold flex items-center gap-1">
+            <h3 class="text-lg font-bold text-white mb-2 leading-snug">{item['title']}</h3>
+            <p class="text-slate-400 text-sm leading-relaxed mb-4">{item['summary']}</p>
+            <a href="{item['url']}" target="_blank" class="text-xs text-sky-400 hover:underline font-semibold flex items-center gap-1">
                 Full Feed Intelligence &rarr;
             </a>
         </article>
         """
 
-    utc_time_str = datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
+    utc_now = datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
+    
+    # Read the designated notification target email from repository secrets context
+    notification_email = os.environ.get('NOTIFICATION_EMAIL', 'your-email@domain.com').strip()
 
-    # Main Static Tailwind CSS Master Page Component Structure
-    html_content = """<!DOCTYPE html>
+    # Full Static Core Bundle Layout Template
+    html_content = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -150,21 +157,23 @@ def build_html_site(stocks, crypto, news):
     <title>Your Daily Financial Guide - Automated Market Intelligence</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #0b0f19; color: #f3f4f6; }
-        .ad-banner { background: linear-gradient(90deg, #1e293b 0%, #0f172a 100%); border: 1px dashed #334155; }
-        .ticker-wrap { overflow: hidden; white-space: nowrap; }
-        .ticker-move { display: inline-block; animation: marquee 30s linear infinite; }
-        @keyframes marquee { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-50%, 0, 0); } }
+        body {{ background-color: #0b0f19; color: #f3f4f6; }}
+        .ad-banner {{ background: linear-gradient(90deg, #1e293b 0%, #0f172a 100%); border: 1px dashed #334155; }}
+        .ticker-wrap {{ overflow: hidden; white-space: nowrap; }}
+        .ticker-move {{ display: inline-block; animation: marquee 30s linear infinite; }}
+        @keyframes marquee {{ 0% {{ transform: translate3d(0, 0, 0); }} 100% {{ transform: translate3d(-50%, 0, 0); }} }}
     </style>
 </head>
 <body class="font-sans antialiased text-slate-300">
 
+    <!-- Top Running Marquee Ribbon Ticker Component -->
     <div class="bg-slate-950 border-b border-slate-800 py-2.5 text-xs text-slate-300 ticker-wrap">
         <div class="ticker-move">
-            """ + ticker_html + """ """ + ticker_html + """
+            {ticker_html} {ticker_html}
         </div>
     </div>
 
+    <!-- Brand Header Navigation Layout -->
     <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
@@ -175,12 +184,14 @@ def build_html_site(stocks, crypto, news):
                 </div>
             </div>
             <div class="text-right text-xs text-slate-400 font-mono bg-slate-950 px-3 py-1.5 rounded-md border border-slate-800">
-                System Updated: """ + utc_time_str + """
+                System Updated: {utc_now}
             </div>
         </div>
     </header>
 
     <main class="max-w-7xl mx-auto px-4 py-8">
+        
+        <!-- TOP MONETIZATION ZONE -->
         <div class="ad-banner rounded-xl p-4 mb-8 text-center max-w-4xl mx-auto">
             <span class="text-[10px] uppercase tracking-widest text-slate-500 block mb-2">Sponsored Advertisement</span>
             <div class="min-h-[90px] flex items-center justify-between text-slate-400 text-sm border border-slate-800 bg-slate-950/40 rounded p-4">
@@ -190,28 +201,35 @@ def build_html_site(stocks, crypto, news):
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left & Middle Column: Dynamic Market Intelligence Feed -->
             <div class="lg:col-span-2 space-y-8">
                 <section>
                     <div class="flex items-center gap-2 mb-4 border-b border-slate-800 pb-2">
                         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <h2 class="text-lg font-bold text-white uppercase tracking-wider text-sm">Live Streaming Market Feeds</h2>
+                        <h2 class="text-lg font-bold text-white uppercase tracking-wider text-xs">Live Streaming Market Feeds</h2>
                     </div>
+                    
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        """ + market_cards_html + """
+                        {market_cards_html}
                     </div>
                 </section>
 
+                <!-- REAL-TIME CONTEXTUAL ARTICLE INVENTORY -->
                 <section class="space-y-4">
                     <div class="flex items-center gap-2 border-b border-slate-800 pb-2 mb-4">
-                        <h2 class="text-lg font-bold text-white uppercase tracking-wider text-sm">Breaking Financial News Desk</h2>
+                        <h2 class="text-lg font-bold text-white uppercase tracking-wider text-xs">Breaking Financial News Desk</h2>
                     </div>
                     <div class="space-y-4">
-                        """ + news_html + """
+                        {news_html}
                     </div>
                 </section>
             </div>
 
+            <!-- Right Column: Sidebar Monetization & Metrics -->
             <div class="space-y-6">
+                
+                <!-- CLIENT SIDE INTERACTIVE CURRENCY CONVERTER WIDGET -->
                 <div class="p-5 bg-slate-900 border border-slate-800 rounded-xl shadow-md">
                     <h3 class="text-white font-bold mb-3 text-xs uppercase tracking-wider">Asset Exchange Calculator</h3>
                     <div class="space-y-3 text-sm">
@@ -234,11 +252,12 @@ def build_html_site(stocks, crypto, news):
                         </button>
                         <div class="mt-2 p-3 bg-slate-950 rounded border border-slate-800 text-center font-mono">
                             <span class="text-xs text-slate-400 block mb-0.5">Estimated Asset Yield</span>
-                            <span id="calcResult" class="text-white font-bold text-base">--</span>
+                            <span id="calcResult" class="text-white font-bold text-base">Loading...</span>
                         </div>
                     </div>
                 </div>
 
+                <!-- SIDEBAR MONETIZATION ZONE: MID-PAGE AD UNIT -->
                 <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 text-center">
                     <span class="text-[10px] uppercase tracking-widest text-slate-500 block mb-2">Automated Ad Node</span>
                     <div class="min-h-[250px] bg-slate-950/80 rounded border border-slate-800 flex flex-col items-center justify-center p-4">
@@ -247,14 +266,18 @@ def build_html_site(stocks, crypto, news):
                     </div>
                 </div>
 
-                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                <!-- Fully Functional FormSubmit Newsletter Form Backend Integration -->
+                <form action="https://formsubmit.co{notification_email}" method="POST" class="bg-slate-900 border border-slate-800 rounded-xl p-5">
                     <h3 class="font-bold text-white mb-2 text-xs uppercase tracking-wider">Asset Intelligence Newsletter</h3>
                     <p class="text-xs text-slate-400 mb-3 leading-relaxed">Join thousands of macro investors receiving automated asset summary data directly to their inbox weekly.</p>
                     <div class="space-y-2">
-                        <input type="email" placeholder="name@email.com" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono">
-                        <button onclick="showSubscribeSuccess()" class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-2 rounded text-xs uppercase tracking-wider transition">Secure Entry Slot</button>
+                        <input type="email" name="email" placeholder="name@email.com" required class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono">
+                        <input type="hidden" name="_subject" value="New Subscriber Alert! - Your Daily Financial Guide">
+                        <input type="hidden" name="_template" value="box">
+                        <input type="hidden" name="_next" value="https://github.io">
+                        <button type="submit" class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-2 rounded text-xs uppercase tracking-wider transition">Secure Entry Slot</button>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     </main>
@@ -264,7 +287,7 @@ def build_html_site(stocks, crypto, news):
     </footer>
 
     <script>
-        function performConversion() {
+        function performConversion() {{
             const amt = document.getElementById('calcAmount').value;
             const price = document.getElementById('calcAsset').value;
             const select = document.getElementById('calcAsset');
@@ -272,27 +295,22 @@ def build_html_site(stocks, crypto, news):
             if(!amt || amt <= 0) return;
             const yieldVal = (amt / price).toFixed(4);
             document.getElementById('calcResult').innerText = yieldVal + " " + label;
-        }
-        function showSubscribeSuccess() {
-            alert('Success! Your secure portfolio monitoring channel has been registered.');
-        }
+        }}
         window.onload = performConversion;
     </script>
 
 </body>
 </html>"""
 
-    # Output compilation packages
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(html_content)
 
-    # Output xml sitemap protocol
-    current_date = datetime.utcnow().strftime('%Y-%m-%d')
-    sitemap_content = """<?xml version="1.0" encoding="UTF-8"?>
+    # Generate XML sitemap
+    sitemap_content = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://sitemaps.org">
     <url>
         <loc>https://github.io</loc>
-        <lastmod>""" + current_date + """</lastmod>
+        <lastmod>{datetime.utcnow().strftime('%Y-%m-%d')}</lastmod>
         <changefreq>hourly</changefreq>
         <priority>1.0</priority>
     </url>
@@ -300,16 +318,15 @@ def build_html_site(stocks, crypto, news):
     with open("sitemap.xml", "w", encoding="utf-8") as f:
         f.write(sitemap_content)
 
-    # Output robots.txt protocol (Forces Search Console tracking configurations to route correctly)
-    robots_content = """User-agent: *
+    # Generate search engine crawl directions
+    robots_content = f"""User-agent: *
 Allow: /
 
-Sitemap: https://github.iositemap.xml
-"""
+Sitemap: https://github.iositemap.xml"""
     with open("robots.txt", "w", encoding="utf-8") as f:
         f.write(robots_content)
         
-    print("Successfully built index.html, sitemap.xml, and robots.txt.")
+    print("Successfully compiled and output raw static markup files.")
 
 if __name__ == "__main__":
     stock_data, crypto_data, news_feed = fetch_financial_data()
