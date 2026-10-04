@@ -1,0 +1,37 @@
+name: Financial News Auto-Refresh
+
+on:
+  schedule:
+    # Automatically runs every 4 hours to fetch fresh updates
+    - cron: '0 */4 * * *'
+  workflow_dispatch: # This line enables the manual "Run workflow" button
+
+jobs:
+  refresh-news:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install requests
+
+      - name: Run data collector script
+        env:
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+        run: python main.py
+
+      - name: Commit and push updated news files
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff-index --quiet HEAD || git commit -m "Automated news update"
+          git push
