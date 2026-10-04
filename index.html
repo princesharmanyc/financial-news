@@ -3,149 +3,232 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Daily Financial Guide</title>
+    <title>Your Daily Financial Guide - Automated Market Intelligence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { background-color: #0b0f19; color: #f3f4f6; padding-bottom: 60px; }
-        
-        /* Premium Ticker Ribbon Styles */
-        .ticker-wrap { background: #111827; border-bottom: 1px solid #1f2937; overflow: hidden; white-space: nowrap; padding: 12px 0; }
-        .ticker { display: inline-block; animation: marquee 25s linear infinite; }
-        .ticker-item { display: inline-block; margin-right: 50px; font-weight: 600; font-size: 14px; letter-spacing: 0.5px; }
+        body { background-color: #0b0f19; color: #f3f4f6; }
+        .ad-banner { background: linear-gradient(90deg, #1e293b 0%, #0f172a 100%); border: 1px dashed #334155; }
+        .ticker-wrap { overflow: hidden; white-space: nowrap; }
+        .ticker-move { display: inline-block; animation: marquee 30s linear infinite; }
         @keyframes marquee { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-50%, 0, 0); } }
-        
-        /* Layout Configurations */
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        header { text-align: center; padding: 40px 0 20px; border-bottom: 1px solid #1f2937; margin-bottom: 30px; }
-        header h1 { font-size: 36px; color: #ffffff; letter-spacing: -0.5px; margin-bottom: 6px; }
-        header p { color: #9ca3af; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; }
-        
-        /* Programmatic Ad Placements */
-        .ad-banner { background: #111827; border: 1px dashed #374151; border-radius: 8px; text-align: center; padding: 20px; color: #4b5563; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; margin: 25px 0; }
-        
-        /* Grid Architectures */
-        .market-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 40px; }
-        .market-card { background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .market-card h3 { font-size: 14px; color: #9ca3af; margin-bottom: 8px; }
-        .market-card .price { font-size: 24px; font-weight: 700; color: #ffffff; margin-bottom: 4px; }
-        
-        .news-container { display: grid; grid-template-columns: 1fr; gap: 25px; }
-        .news-card { background: #111827; border: 1px solid #1f2937; border-radius: 16px; padding: 30px; position: relative; transition: transform 0.2s; }
-        .news-card:hover { transform: translateY(-2px); border-color: #374151; }
-        .news-card .source { background: #1e293b; color: #38bdf8; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; display: inline-block; margin-bottom: 12px; }
-        .news-card h2 { font-size: 22px; color: #ffffff; margin-bottom: 12px; line-height: 1.4; }
-        .news-card p { color: #9ca3af; font-size: 15px; line-height: 1.6; margin-bottom: 20px; }
-        .news-card .read-btn { text-decoration: none; color: #38bdf8; font-size: 14px; font-weight: 600; }
-        
-        /* Global Signage Colors */
-        .green { color: #10b981 !important; }
-        .red { color: #ef4444 !important; }
     </style>
-
-    <!-- PREMIUM PRIVACY-FRIENDLY WEB ANALYTICS COUNTER (GoatCounter) -->
-    <!-- This tracks real human visitors anonymously without using tracking cookies or requiring annoying cookie banners -->
-    <script data-goatcounter="https://goatcounter.com" async src="//gc.zgo.at/count.js"></script>
-
 </head>
-<body>
+<body class="font-sans antialiased text-slate-300">
 
-    <!-- Premium Running Marquee Ticker -->
-    <div class="ticker-wrap">
-        <div class="ticker">
-            <span class='ticker-item'>AAPL: $175.42 (<span class='green'>+1.25%</span>)</span><span class='ticker-item'>MSFT: $420.55 (<span class='red'>-0.85%</span>)</span><span class='ticker-item'>NVDA: $875.12 (<span class='green'>+4.12%</span>)</span><span class='ticker-item'>TSLA: $171.05 (<span class='red'>-2.34%</span>)</span><span class='ticker-item'>BTC: $64250.0 (<span class='green'>+2.45%</span>)</span><span class='ticker-item'>ETH: $3450.25 (<span class='green'>+1.15%</span>)</span><span class='ticker-item'>SOL: $142.8 (<span class='red'>-3.1%</span>)</span> <span class='ticker-item'>AAPL: $175.42 (<span class='green'>+1.25%</span>)</span><span class='ticker-item'>MSFT: $420.55 (<span class='red'>-0.85%</span>)</span><span class='ticker-item'>NVDA: $875.12 (<span class='green'>+4.12%</span>)</span><span class='ticker-item'>TSLA: $171.05 (<span class='red'>-2.34%</span>)</span><span class='ticker-item'>BTC: $64250.0 (<span class='green'>+2.45%</span>)</span><span class='ticker-item'>ETH: $3450.25 (<span class='green'>+1.15%</span>)</span><span class='ticker-item'>SOL: $142.8 (<span class='red'>-3.1%</span>)</span>
+    <!-- Top Running Marquee Ribbon Ticker Component -->
+    <div class="bg-slate-950 border-b border-slate-800 py-2.5 text-xs text-slate-300 ticker-wrap">
+        <div class="ticker-move">
+            <span class='mx-4 font-semibold'>AAPL: $175.42 (<span class='text-emerald-400'>+1.25%</span>)</span> •<span class='mx-4 font-semibold'>MSFT: $420.55 (<span class='text-red-400'>-0.85%</span>)</span> •<span class='mx-4 font-semibold'>NVDA: $875.12 (<span class='text-emerald-400'>+4.12%</span>)</span> •<span class='mx-4 font-semibold'>TSLA: $171.05 (<span class='text-red-400'>-2.34%</span>)</span> •<span class='mx-4 font-semibold'>BTC: $64250.0 (<span class='text-emerald-400'>+2.45%</span>)</span> •<span class='mx-4 font-semibold'>ETH: $3450.25 (<span class='text-emerald-400'>+1.15%</span>)</span> •<span class='mx-4 font-semibold'>SOL: $142.8 (<span class='text-red-400'>-3.1%</span>)</span> • <span class='mx-4 font-semibold'>AAPL: $175.42 (<span class='text-emerald-400'>+1.25%</span>)</span> •<span class='mx-4 font-semibold'>MSFT: $420.55 (<span class='text-red-400'>-0.85%</span>)</span> •<span class='mx-4 font-semibold'>NVDA: $875.12 (<span class='text-emerald-400'>+4.12%</span>)</span> •<span class='mx-4 font-semibold'>TSLA: $171.05 (<span class='text-red-400'>-2.34%</span>)</span> •<span class='mx-4 font-semibold'>BTC: $64250.0 (<span class='text-emerald-400'>+2.45%</span>)</span> •<span class='mx-4 font-semibold'>ETH: $3450.25 (<span class='text-emerald-400'>+1.15%</span>)</span> •<span class='mx-4 font-semibold'>SOL: $142.8 (<span class='text-red-400'>-3.1%</span>)</span> •
         </div>
     </div>
 
-    <div class="container">
-        <header>
-            <h1>Your Daily Financial Guide</h1>
-            <p>Automated Asset Intelligence &bull; Continuous Update Feed</p>
-            <div style="font-size: 11px; font-mono; color: #4b5563; margin-top: 10px;">Engine Sync: 2026-10-04 19:40 UTC</div>
-        </header>
+    <!-- Brand Header Navigation Layout -->
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-emerald-500 text-slate-950 p-2 rounded-lg font-black tracking-wider text-xl">YDFG</div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-white">Your Daily Financial Guide</h1>
+                    <p class="text-xs text-slate-400">Automated Financial & Crypto Data Engine</p>
+                </div>
+            </div>
+            <div class="text-right text-xs text-slate-400 font-mono bg-slate-950 px-3 py-1.5 rounded-md border border-slate-800">
+                System Updated: 2026-10-04 20:22 UTC
+            </div>
+        </div>
+    </header>
 
-        <!-- Dynamic Market Dashboard Grid Layout -->
-        <div class="market-grid">
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        
+        <!-- TOP MONETIZATION ZONE -->
+        <div class="ad-banner rounded-xl p-4 mb-8 text-center max-w-4xl mx-auto">
+            <span class="text-[10px] uppercase tracking-widest text-slate-500 block mb-2">Sponsored Advertisement</span>
+            <div class="min-h-[90px] flex items-center justify-between text-slate-400 text-sm border border-slate-800 bg-slate-950/40 rounded p-4">
+                <p class="text-left font-medium text-xs text-slate-300">📈 Passive Income Node Active</p>
+                <span class="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded font-mono">AdSense Placeholder (728x90 Billboard)</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-        <div class="market-card">
-            <h3>Apple Inc. (AAPL)</h3>
-            <div class="price">$175.42</div>
-            <div class="change green">+1.25%</div>
+            <!-- Left & Middle Column: Dynamic Market Intelligence Feed -->
+            <div class="lg:col-span-2 space-y-8">
+                <section>
+                    <div class="flex items-center gap-2 mb-4 border-b border-slate-800 pb-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <h2 class="text-lg font-bold text-white uppercase tracking-wider text-sm">Live Streaming Market Feeds</h2>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        
+        <div class="p-4 bg-slate-900 border bg-emerald-500/5 border-emerald-500/10 rounded-xl shadow-sm">
+            <div class="text-xs font-semibold text-slate-400 uppercase">Apple Inc.</div>
+            <div class="text-xl font-bold text-white mt-1">$175.42</div>
+            <div class="text-xs font-mono mt-0.5 text-emerald-400">+1.25%</div>
         </div>
         
-        <div class="market-card">
-            <h3>Microsoft Corp. (MSFT)</h3>
-            <div class="price">$420.55</div>
-            <div class="change red">-0.85%</div>
+        <div class="p-4 bg-slate-900 border bg-red-500/5 border-red-500/10 rounded-xl shadow-sm">
+            <div class="text-xs font-semibold text-slate-400 uppercase">Microsoft Corp.</div>
+            <div class="text-xl font-bold text-white mt-1">$420.55</div>
+            <div class="text-xs font-mono mt-0.5 text-red-400">-0.85%</div>
         </div>
         
-        <div class="market-card">
-            <h3>NVIDIA Corp. (NVDA)</h3>
-            <div class="price">$875.12</div>
-            <div class="change green">+4.12%</div>
+        <div class="p-4 bg-slate-900 border bg-emerald-500/5 border-emerald-500/10 rounded-xl shadow-sm">
+            <div class="text-xs font-semibold text-slate-400 uppercase">NVIDIA Corp.</div>
+            <div class="text-xl font-bold text-white mt-1">$875.12</div>
+            <div class="text-xs font-mono mt-0.5 text-emerald-400">+4.12%</div>
         </div>
         
-        <div class="market-card">
-            <h3>Tesla Inc. (TSLA)</h3>
-            <div class="price">$171.05</div>
-            <div class="change red">-2.34%</div>
+        <div class="p-4 bg-slate-900 border bg-red-500/5 border-red-500/10 rounded-xl shadow-sm">
+            <div class="text-xs font-semibold text-slate-400 uppercase">Tesla Inc.</div>
+            <div class="text-xl font-bold text-white mt-1">$171.05</div>
+            <div class="text-xs font-mono mt-0.5 text-red-400">-2.34%</div>
         </div>
         
-        <div class="market-card">
-            <h3>Bitcoin (BTC)</h3>
-            <div class="price">$64250.0</div>
-            <div class="change green">+2.45%</div>
+        <div class="p-4 bg-slate-900 border bg-emerald-500/5 border-emerald-500/10 rounded-xl shadow-sm">
+            <div class="text-xs font-semibold text-slate-400 uppercase">Bitcoin</div>
+            <div class="text-xl font-bold text-white mt-1">$64250.0</div>
+            <div class="text-xs font-mono mt-0.5 text-emerald-400">+2.45%</div>
         </div>
         
-        <div class="market-card">
-            <h3>Ethereum (ETH)</h3>
-            <div class="price">$3450.25</div>
-            <div class="change green">+1.15%</div>
+        <div class="p-4 bg-slate-900 border bg-emerald-500/5 border-emerald-500/10 rounded-xl shadow-sm">
+            <div class="text-xs font-semibold text-slate-400 uppercase">Ethereum</div>
+            <div class="text-xl font-bold text-white mt-1">$3450.25</div>
+            <div class="text-xs font-mono mt-0.5 text-emerald-400">+1.15%</div>
         </div>
         
-        <div class="market-card">
-            <h3>Solana (SOL)</h3>
-            <div class="price">$142.8</div>
-            <div class="change red">-3.1%</div>
+        <div class="p-4 bg-slate-900 border bg-red-500/5 border-red-500/10 rounded-xl shadow-sm">
+            <div class="text-xs font-semibold text-slate-400 uppercase">Solana</div>
+            <div class="text-xl font-bold text-white mt-1">$142.8</div>
+            <div class="text-xs font-mono mt-0.5 text-red-400">-3.1%</div>
         </div>
         
-        </div>
+                    </div>
+                </section>
 
-        <!-- Upper Monetization Ad Node Placement Placeholder -->
-        <div class="ad-banner">
-            Programmatic Ad Advertisement Space Placeholder (728x90 Billboard)
-        </div>
+                <!-- REAL-TIME CONTEXTUAL ARTICLE INVENTORY -->
+                <section class="space-y-4">
+                    <div class="flex items-center gap-2 border-b border-slate-800 pb-2 mb-4">
+                        <h2 class="text-lg font-bold text-white uppercase tracking-wider text-sm">Breaking Financial News Desk</h2>
+                    </div>
+                    <div class="space-y-4">
+                        
+        <article class="p-6 bg-slate-900 border border-slate-800 rounded-xl hover:border-slate-700 transition duration-200">
+            <div class="inline-block bg-slate-800 text-sky-400 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider mb-3">
+                Macro Desk
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2 leading-snug">Fed Signals Steady Interest Rates Amid Balanced Economic Expansion</h3>
+            <p class="text-slate-400 text-sm leading-relaxed mb-4">Central banking authorities indicated a steady path forward for interest metrics, boosting indices across technological and growth sectors globally.</p>
+            <a href="https://google.com/search?q=finance+news" class="text-xs text-sky-400 hover:underline font-semibold flex items-center gap-1">
+                Full Feed Intelligence &rarr;
+            </a>
+        </article>
+        
+        <article class="p-6 bg-slate-900 border border-slate-800 rounded-xl hover:border-slate-700 transition duration-200">
+            <div class="inline-block bg-slate-800 text-sky-400 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider mb-3">
+                Crypto Ledger
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2 leading-snug">Institutional Inflows Drive Digital Asset Capitalization Weights Higher</h3>
+            <p class="text-slate-400 text-sm leading-relaxed mb-4">Major exchange-traded financial vehicles reported substantial fresh capital allocations, establishing baseline support corridors for leading digital tokens.</p>
+            <a href="https://google.com/search?q=crypto+news" class="text-xs text-sky-400 hover:underline font-semibold flex items-center gap-1">
+                Full Feed Intelligence &rarr;
+            </a>
+        </article>
+        
+        <article class="p-6 bg-slate-900 border border-slate-800 rounded-xl hover:border-slate-700 transition duration-200">
+            <div class="inline-block bg-slate-800 text-sky-400 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider mb-3">
+                Tech Analytics
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2 leading-snug">Enterprise Cloud Architecture Demand Triggers Tech Sector Rallies</h3>
+            <p class="text-slate-400 text-sm leading-relaxed mb-4">Advanced enterprise systems and semiconductor chip designers reported optimized efficiency gains, sparking renewed momentum in growth portfolios.</p>
+            <a href="https://google.com/search?q=tech+stocks+news" class="text-xs text-sky-400 hover:underline font-semibold flex items-center gap-1">
+                Full Feed Intelligence &rarr;
+            </a>
+        </article>
+        
+                    </div>
+                </section>
+            </div>
 
-        <!-- Main Stream News Feed Section Layout -->
-        <div class="news-container">
-            
-        <div class="news-card">
-            <span class="source">Global Markets Desk</span>
-            <h2>Fed Signals Steady Interest Rates Amid Balanced Economic Expansion</h2>
-            <p>Central banking authorities indicated a steady path forward for interest metrics, boosting indices across technological and industrial capital structures globally.</p>
-            <a href="#" class="read-btn">Full Coverage &rarr;</a>
+            <!-- Right Column: Sidebar Monetization & Metrics -->
+            <div class="space-y-6">
+                
+                <!-- CLIENT SIDE INTERACTIVE CURRENCY CONVERTER WIDGET -->
+                <div class="p-5 bg-slate-900 border border-slate-800 rounded-xl shadow-md">
+                    <h3 class="text-white font-bold mb-3 text-xs uppercase tracking-wider">Asset Exchange Calculator</h3>
+                    <div class="space-y-3 text-sm">
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Enter Capital Amount (USD)</label>
+                            <input id="calcAmount" type="number" value="1000" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white font-mono focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Target Instrument</label>
+                            <select id="calcAsset" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white focus:outline-none focus:border-emerald-500">
+                                <option value="64250">Bitcoin (BTC)</option>
+                                <option value="3450">Ethereum (ETH)</option>
+                                <option value="142">Solana (SOL)</option>
+                                <option value="175">Apple (AAPL)</option>
+                                <option value="420">Microsoft (MSFT)</option>
+                            </select>
+                        </div>
+                        <button onclick="performConversion()" class="w-full bg-emerald-500 text-slate-950 font-bold py-2 rounded text-xs uppercase tracking-wider hover:bg-emerald-400 transition">
+                            Compute Distribution
+                        </button>
+                        <div class="mt-2 p-3 bg-slate-950 rounded border border-slate-800 text-center font-mono">
+                            <span class="text-xs text-slate-400 block mb-0.5">Estimated Asset Yield</span>
+                            <span id="calcResult" class="text-white font-bold text-base">0.0156 BTC</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SIDEBAR MONETIZATION ZONE: MID-PAGE AD UNIT -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 text-center">
+                    <span class="text-[10px] uppercase tracking-widest text-slate-500 block mb-2">Automated Ad Node</span>
+                    <div class="min-h-[250px] bg-slate-950/80 rounded border border-slate-800 flex flex-col items-center justify-center p-4">
+                        <p class="text-xs text-slate-400 mb-2 font-medium">Native Financial Exchange Unit</p>
+                        <span class="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">AdSense Rectangle (300x250)</span>
+                    </div>
+                </div>
+
+                <!-- Newsletter Registry Panel Node -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                    <h3 class="font-bold text-white mb-2 text-xs uppercase tracking-wider">Asset Intelligence Newsletter</h3>
+                    <p class="text-xs text-slate-400 mb-3 leading-relaxed">Join thousands of macro investors receiving automated asset summary data directly to their inbox weekly.</p>
+                    <div class="space-y-2">
+                        <input id="subscriberEmail" type="email" placeholder="name@email.com" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono">
+                        <button onclick="showSubscribeSuccess()" class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-2 rounded text-xs uppercase tracking-wider transition">Secure Entry Slot</button>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <div class="news-card">
-            <span class="source">Decentralized Ledger</span>
-            <h2>Crypto Inflows Drive Digital Asset Capitalization Weights Higher</h2>
-            <p>Major exchange-traded financial vehicles reported substantial fresh capital allocations, establishing baseline support corridors for leading digital tokens.</p>
-            <a href="#" class="read-btn">Full Coverage &rarr;</a>
-        </div>
-        
-        <div class="news-card">
-            <span class="source">Silicon Reporter</span>
-            <h2>Tech Sector Earnings Outperform Wall Street Baseline Consensus Expectations</h2>
-            <p>Advanced enterprise systems and semiconductor chip designers reported optimized efficiency gains, sparking renewed momentum in growth portfolios.</p>
-            <a href="#" class="read-btn">Full Coverage &rarr;</a>
-        </div>
-        
-        </div>
-        
-        <!-- Lower Monetization Ad Node Placement Placeholder -->
-        <div class="ad-banner">
-            Programmatic Ad Advertisement Space Placeholder (300x250 Medium Rectangle)
-        </div>
-    </div>
+    </main>
+
+    <footer class="border-t border-slate-800 bg-slate-950 mt-16 py-8 text-center text-xs text-slate-500">
+        <p>© 2026 Your Daily Financial Guide. Powered entirely by Serverless GitHub Automation Infrastructure.</p>
+    </footer>
+
+    <!-- Interactive Client Widget Controllers Script Logic -->
+    <script>
+        function performConversion() {
+            var amt = document.getElementById('calcAmount').value;
+            var price = document.getElementById('calcAsset').value;
+            var select = document.getElementById('calcAsset');
+            var label = select.options[select.selectedIndex].text.match(/\((.+)\)/)[1];
+            if(!amt || amt <= 0) return;
+            var yieldVal = (amt / price).toFixed(4);
+            document.getElementById('calcResult').innerText = yieldVal + " " + label;
+        }
+        function showSubscribeSuccess() {
+            var email = document.getElementById('subscriberEmail').value;
+            if(!email || !email.includes('@')) {
+                alert('Please enter a valid email address.');
+                return;
+            }
+            alert('Success! Your secure portfolio monitoring channel has been registered.');
+            document.getElementById('subscriberEmail').value = '';
+        }
+        window.onload = performConversion;
+    </script>
 
 </body>
 </html>
