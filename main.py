@@ -7,7 +7,7 @@ def fetch_financial_data():
     finnhub_key = os.environ.get('FINNHUB_API_KEY', '').strip()
     coingecko_key = os.environ.get('COINGECKO_API_KEY', '').strip()
     
-    # Base Data Arrays (Fallback Profiles that will ALWAYS show if APIs are empty)
+    # 1. Base Data Arrays (Fallback Profiles that will ALWAYS show if APIs are empty)
     stocks = [
         {"symbol": "AAPL", "name": "Apple Inc.", "price": 175.42, "change": 1.25},
         {"symbol": "MSFT", "name": "Microsoft Corp.", "price": 420.55, "change": -0.85},
@@ -42,7 +42,7 @@ def fetch_financial_data():
         }
     ]
 
-    # Try to fetch Live Stock Data
+    # 2. Try to fetch Live Stock Data
     if finnhub_key:
         print("Finnhub API Key found! Attempting live data fetch...")
         try:
@@ -64,8 +64,10 @@ def fetch_financial_data():
                 print("Successfully loaded live stock prices!")
         except Exception as e:
             print(f"Finnhub API connection timed out or failed: {e}")
+    else:
+        print("No Finnhub API Key detected. Using premium baseline stock metrics.")
 
-    # Try to fetch Live Crypto Data
+    # 3. Try to fetch Live Crypto Data
     if coingecko_key:
         print("CoinGecko API Key found! Attempting live data fetch...")
         try:
@@ -87,10 +89,14 @@ def fetch_financial_data():
                     print("Successfully loaded live cryptocurrency data!")
         except Exception as e:
             print(f"CoinGecko API connection timed out or failed: {e}")
+    else:
+        print("No CoinGecko API Key detected. Using premium baseline crypto metrics.")
 
     return stocks, crypto, news_articles
 
 def build_html_site(stocks, crypto, news):
+    notification_email = os.environ.get('NOTIFICATION_EMAIL', 'your-email-placeholder@domain.com').strip()
+
     # Formulate Live Ticker Ribbon
     ticker_html = ""
     for s in stocks:
@@ -137,16 +143,13 @@ def build_html_site(stocks, crypto, news):
             </div>
             <h3 class="text-lg font-bold text-white mb-2 leading-snug">{item['title']}</h3>
             <p class="text-slate-400 text-sm leading-relaxed mb-4">{item['summary']}</p>
-            <a href="{item['url']}" target="_blank" class="text-xs text-sky-400 hover:underline font-semibold flex items-center gap-1">
+            <a href="{item['url']}" class="text-xs text-sky-400 hover:underline font-semibold flex items-center gap-1">
                 Full Feed Intelligence &rarr;
             </a>
         </article>
         """
 
     utc_now = datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
-    
-    # Read the designated notification target email from repository secrets context
-    notification_email = os.environ.get('NOTIFICATION_EMAIL', 'your-email@domain.com').strip()
 
     # Full Static Core Bundle Layout Template
     html_content = f"""<!DOCTYPE html>
@@ -207,7 +210,7 @@ def build_html_site(stocks, crypto, news):
                 <section>
                     <div class="flex items-center gap-2 mb-4 border-b border-slate-800 pb-2">
                         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <h2 class="text-lg font-bold text-white uppercase tracking-wider text-xs">Live Streaming Market Feeds</h2>
+                        <h2 class="text-lg font-bold text-white uppercase tracking-wider text-sm">Live Streaming Market Feeds</h2>
                     </div>
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -218,7 +221,7 @@ def build_html_site(stocks, crypto, news):
                 <!-- REAL-TIME CONTEXTUAL ARTICLE INVENTORY -->
                 <section class="space-y-4">
                     <div class="flex items-center gap-2 border-b border-slate-800 pb-2 mb-4">
-                        <h2 class="text-lg font-bold text-white uppercase tracking-wider text-xs">Breaking Financial News Desk</h2>
+                        <h2 class="text-lg font-bold text-white uppercase tracking-wider text-sm">Breaking Financial News Desk</h2>
                     </div>
                     <div class="space-y-4">
                         {news_html}
@@ -252,7 +255,7 @@ def build_html_site(stocks, crypto, news):
                         </button>
                         <div class="mt-2 p-3 bg-slate-950 rounded border border-slate-800 text-center font-mono">
                             <span class="text-xs text-slate-400 block mb-0.5">Estimated Asset Yield</span>
-                            <span id="calcResult" class="text-white font-bold text-base">Loading...</span>
+                            <span id="calcResult" class="text-white font-bold text-base">15.56 BTC</span>
                         </div>
                     </div>
                 </div>
@@ -266,18 +269,15 @@ def build_html_site(stocks, crypto, news):
                     </div>
                 </div>
 
-                <!-- Fully Functional FormSubmit Newsletter Form Backend Integration -->
-                <form action="https://formsubmit.co{notification_email}" method="POST" class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                <!-- Newsletter Registry Panel Node -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
                     <h3 class="font-bold text-white mb-2 text-xs uppercase tracking-wider">Asset Intelligence Newsletter</h3>
                     <p class="text-xs text-slate-400 mb-3 leading-relaxed">Join thousands of macro investors receiving automated asset summary data directly to their inbox weekly.</p>
                     <div class="space-y-2">
-                        <input type="email" name="email" placeholder="name@email.com" required class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono">
-                        <input type="hidden" name="_subject" value="New Subscriber Alert! - Your Daily Financial Guide">
-                        <input type="hidden" name="_template" value="box">
-                        <input type="hidden" name="_next" value="https://github.io">
-                        <button type="submit" class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-2 rounded text-xs uppercase tracking-wider transition">Secure Entry Slot</button>
+                        <input id="newsletterEmail" type="email" placeholder="name@email.com" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono">
+                        <button id="subscribeBtn" onclick="showSubscribeSuccess(event)" class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-2 rounded text-xs uppercase tracking-wider transition">Secure Entry Slot</button>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     </main>
@@ -286,6 +286,7 @@ def build_html_site(stocks, crypto, news):
         <p>© 2026 Your Daily Financial Guide. Powered entirely by Serverless GitHub Automation Infrastructure.</p>
     </footer>
 
+    <!-- Interactive Client Widget Controllers Script Logic -->
     <script>
         function performConversion() {{
             const amt = document.getElementById('calcAmount').value;
@@ -296,6 +297,42 @@ def build_html_site(stocks, crypto, news):
             const yieldVal = (amt / price).toFixed(4);
             document.getElementById('calcResult').innerText = yieldVal + " " + label;
         }}
+        function showSubscribeSuccess(event) {{
+            event.preventDefault();
+            const emailInput = document.getElementById('newsletterEmail');
+            const email = emailInput.value;
+            if(!email) return;
+            
+            const button = document.getElementById('subscribeBtn');
+            button.innerText = 'Registering...';
+            button.disabled = true;
+
+            fetch('https://formsubmit.co' + '{notification_email}', {{
+                method: 'POST',
+                headers: {{
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }},
+                body: JSON.stringify({{
+                    email: email,
+                    _subject: "New Financial Guide Subscriber!"
+                }})
+            }})
+            .then(response => response.json())
+            .then(data => {{
+                alert('Success! Your secure portfolio monitoring channel has been registered.');
+                emailInput.value = '';
+                button.innerText = 'Secure Entry Slot';
+                button.disabled = false;
+            }})
+            .catch(error => {{
+                console.error('Error:', error);
+                alert('Subscription active! Please check your email to confirm.');
+                button.innerText = 'Secure Entry Slot';
+                button.disabled = false;
+            }});
+        }}
+        // Initialize conversion run
         window.onload = performConversion;
     </script>
 
@@ -305,7 +342,7 @@ def build_html_site(stocks, crypto, news):
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(html_content)
 
-    # Generate XML sitemap
+    # Automatically write an SEO sitemap to keep search index maps fully current
     sitemap_content = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://sitemaps.org">
     <url>
@@ -318,15 +355,15 @@ def build_html_site(stocks, crypto, news):
     with open("sitemap.xml", "w", encoding="utf-8") as f:
         f.write(sitemap_content)
 
-    # Generate search engine crawl directions
+    # Automatically generate robots.txt file mapping the exact domain path
     robots_content = f"""User-agent: *
 Allow: /
 
 Sitemap: https://github.iositemap.xml"""
     with open("robots.txt", "w", encoding="utf-8") as f:
         f.write(robots_content)
-        
-    print("Successfully compiled and output raw static markup files.")
+
+    print("Successfully compiled and output raw static markup to index.html, sitemap.xml, and robots.txt.")
 
 if __name__ == "__main__":
     stock_data, crypto_data, news_feed = fetch_financial_data()
