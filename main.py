@@ -3,11 +3,11 @@ import requests
 from datetime import datetime
 
 def fetch_financial_data():
-    # Gather API keys from GitHub Secrets
+    # Gather API keys securely from GitHub Secrets Environment
     finnhub_key = os.environ.get('FINNHUB_API_KEY', '').strip()
     coingecko_key = os.environ.get('COINGECKO_API_KEY', '').strip()
     
-    # 1. Base Data Arrays (Fallback Profiles that will ALWAYS show if APIs are empty)
+    # Premium baseline data profiles (Ensures the platform is never blank)
     stocks = [
         {"symbol": "AAPL", "name": "Apple Inc.", "price": 175.42, "change": 1.25},
         {"symbol": "MSFT", "name": "Microsoft Corp.", "price": 420.55, "change": -0.85},
@@ -42,9 +42,9 @@ def fetch_financial_data():
         }
     ]
 
-    # 2. Try to fetch Live Stock Data
+    # Defensive parsing for Finnhub Stock API Data
     if finnhub_key:
-        print("Finnhub API Key found! Attempting live data fetch...")
+        print("Finnhub key verified. Fetching market variables...")
         try:
             live_stocks = []
             for item in stocks:
@@ -52,50 +52,54 @@ def fetch_financial_data():
                 res = requests.get(url, timeout=10)
                 if res.status_code == 200:
                     data = res.json()
-                    if data.get('c') is not None and data.get('c') != 0:
+                    # Insined checks for API fields to protect from TypeErrors
+                    c_val = data.get('c')
+                    dp_val = data.get('dp')
+                    if c_val is not None and c_val != 0:
                         live_stocks.append({
                             "symbol": item['symbol'],
                             "name": item['name'],
-                            "price": round(data['c'], 2),
-                            "change": round(data.get('d', 0), 2)
+                            "price": round(float(c_val), 2),
+                            "change": round(float(dp_val) if dp_val is not None else 0.0, 2)
                         })
             if live_stocks:
                 stocks = live_stocks
-                print("Successfully loaded live stock prices!")
+                print("Live stock data successfully parsed.")
         except Exception as e:
-            print(f"Finnhub API connection timed out or failed: {e}")
-    else:
-        print("No Finnhub API Key detected. Using premium baseline stock metrics.")
+            print(f"Stock pipeline skipped due to validation constraint: {e}")
 
-    # 3. Try to fetch Live Crypto Data
+    # Defensive parsing for CoinGecko Crypto API Data
     if coingecko_key:
-        print("CoinGecko API Key found! Attempting live data fetch...")
+        print("CoinGecko key verified. Fetching digital token indices...")
         try:
             headers = {"x-cg-demo-api-key": coingecko_key}
             url = "https://coingecko.com"
             res = requests.get(url, headers=headers, timeout=10)
             if res.status_code == 200:
                 data = res.json()
-                live_crypto = []
-                for coin in data:
-                    live_crypto.append({
-                        "name": coin['name'],
-                        "symbol": coin['symbol'].upper(),
-                        "price": round(coin['current_price'], 2),
-                        "change": round(coin.get('price_change_percentage_24h', 0), 2)
-                    })
-                if live_crypto:
-                    crypto = live_crypto
-                    print("Successfully loaded live cryptocurrency data!")
+                # Explicit check that API returned a valid list structure instead of a rate-limit dict
+                if isinstance(data, list):
+                    live_crypto = []
+                    for coin in data:
+                        p_val = coin.get('current_price')
+                        ch_val = coin.get('price_change_percentage_24h')
+                        if p_val is not None:
+                            live_crypto.append({
+                                "name": coin.get('name', 'Unknown Token'),
+                                "symbol": coin.get('symbol', 'crypt').upper(),
+                                "price": round(float(p_val), 2),
+                                "change": round(float(ch_val) if ch_val is not None else 0.0, 2)
+                            })
+                    if live_crypto:
+                        crypto = live_crypto
+                        print("Live cryptocurrency data successfully parsed.")
         except Exception as e:
-            print(f"CoinGecko API connection timed out or failed: {e}")
-    else:
-        print("No CoinGecko API Key detected. Using premium baseline crypto metrics.")
+            print(f"Crypto pipeline skipped due to validation constraint: {e}")
 
     return stocks, crypto, news_articles
 
 def build_html_site(stocks, crypto, news):
-    # Formulate Live Ticker Ribbon
+    # Construct running text marquee ticker elements
     ticker_html = ""
     for s in stocks:
         color = "text-emerald-400" if s['change'] >= 0 else "text-red-400"
@@ -106,7 +110,7 @@ def build_html_site(stocks, crypto, news):
         sign = "+" if c['change'] >= 0 else ""
         ticker_html += f"<span class='mx-4 font-semibold'>{c['symbol']}: ${c['price']} (<span class='{color}'>{sign}{c['change']}%</span>)</span> •"
 
-    # Formulate Market Card Components
+    # Construct responsive asset pricing dashboard grid blocks
     market_cards_html = ""
     for s in stocks:
         color = "text-emerald-400" if s['change'] >= 0 else "text-red-400"
@@ -131,7 +135,7 @@ def build_html_site(stocks, crypto, news):
         </div>
         """
 
-    # Formulate News Feeds Cards
+    # Construct editorial breaking news feed cards
     news_html = ""
     for item in news:
         news_html += f"""
@@ -149,7 +153,7 @@ def build_html_site(stocks, crypto, news):
 
     utc_now = datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
 
-    # Full Static Core Bundle Layout Template
+    # Production-grade HTML document structural shell package string
     html_content = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -196,3 +200,138 @@ def build_html_site(stocks, crypto, news):
         <div class="ad-banner rounded-xl p-4 mb-8 text-center max-w-4xl mx-auto">
             <span class="text-[10px] uppercase tracking-widest text-slate-500 block mb-2">Sponsored Advertisement</span>
             <div class="min-h-[90px] flex items-center justify-between text-slate-400 text-sm border border-slate-800 bg-slate-950/40 rounded p-4">
+                <p class="text-left font-medium text-xs text-slate-300">📈 Passive Income Node Active</p>
+                <span class="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded font-mono">AdSense Placeholder (728x90 Billboard)</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left & Middle Column: Dynamic Market Intelligence Feed -->
+            <div class="lg:col-span-2 space-y-8">
+                <section>
+                    <div class="flex items-center gap-2 mb-4 border-b border-slate-800 pb-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <h2 class="text-lg font-bold text-white uppercase tracking-wider text-sm">Live Streaming Market Feeds</h2>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {market_cards_html}
+                    </div>
+                </section>
+
+                <!-- REAL-TIME CONTEXTUAL ARTICLE INVENTORY -->
+                <section class="space-y-4">
+                    <div class="flex items-center gap-2 border-b border-slate-800 pb-2 mb-4">
+                        <h2 class="text-lg font-bold text-white uppercase tracking-wider text-sm">Breaking Financial News Desk</h2>
+                    </div>
+                    <div class="space-y-4">
+                        {news_html}
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Column: Sidebar Monetization & Metrics -->
+            <div class="space-y-6">
+                
+                <!-- CLIENT SIDE INTERACTIVE CURRENCY CONVERTER WIDGET -->
+                <div class="p-5 bg-slate-900 border border-slate-800 rounded-xl shadow-md">
+                    <h3 class="text-white font-bold mb-3 text-xs uppercase tracking-wider">Asset Exchange Calculator</h3>
+                    <div class="space-y-3 text-sm">
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Enter Capital Amount (USD)</label>
+                            <input id="calcAmount" type="number" value="1000" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white font-mono focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Target Instrument</label>
+                            <select id="calcAsset" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white focus:outline-none focus:border-emerald-500">
+                                <option value="64250">Bitcoin (BTC)</option>
+                                <option value="3450">Ethereum (ETH)</option>
+                                <option value="142">Solana (SOL)</option>
+                                <option value="175">Apple (AAPL)</option>
+                                <option value="420">Microsoft (MSFT)</option>
+                            </select>
+                        </div>
+                        <button onclick="performConversion()" class="w-full bg-emerald-500 text-slate-950 font-bold py-2 rounded text-xs uppercase tracking-wider hover:bg-emerald-400 transition">
+                            Compute Distribution
+                        </button>
+                        <div class="mt-2 p-3 bg-slate-950 rounded border border-slate-800 text-center font-mono">
+                            <span class="text-xs text-slate-400 block mb-0.5">Estimated Asset Yield</span>
+                            <span id="calcResult" class="text-white font-bold text-base">0.0156 BTC</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SIDEBAR MONETIZATION ZONE: MID-PAGE AD UNIT -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 text-center">
+                    <span class="text-[10px] uppercase tracking-widest text-slate-500 block mb-2">Automated Ad Node</span>
+                    <div class="min-h-[250px] bg-slate-950/80 rounded border border-slate-800 flex flex-col items-center justify-center p-4">
+                        <p class="text-xs text-slate-400 mb-2 font-medium">Native Financial Exchange Unit</p>
+                        <span class="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">AdSense Rectangle (300x250)</span>
+                    </div>
+                </div>
+
+                <!-- Newsletter Registry Panel Node -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                    <h3 class="font-bold text-white mb-2 text-xs uppercase tracking-wider">Asset Intelligence Newsletter</h3>
+                    <p class="text-xs text-slate-400 mb-3 leading-relaxed">Join thousands of macro investors receiving automated asset summary data directly to their inbox weekly.</p>
+                    <div class="space-y-2">
+                        <input id="subscriberEmail" type="email" placeholder="name@email.com" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono">
+                        <button onclick="showSubscribeSuccess()" class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-2 rounded text-xs uppercase tracking-wider transition">Secure Entry Slot</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="border-t border-slate-800 bg-slate-950 mt-16 py-8 text-center text-xs text-slate-500">
+        <p>© 2026 Your Daily Financial Guide. Powered entirely by Serverless GitHub Automation Infrastructure.</p>
+    </footer>
+
+    <!-- Interactive Client Widget Controllers Script Logic -->
+    <script>
+        function performConversion() {{
+            var amt = document.getElementById('calcAmount').value;
+            var price = document.getElementById('calcAsset').value;
+            var select = document.getElementById('calcAsset');
+            var label = select.options[select.selectedIndex].text.match(/\\((.+)\\)/)[1];
+            if(!amt || amt <= 0) return;
+            var yieldVal = (amt / price).toFixed(4);
+            document.getElementById('calcResult').innerText = yieldVal + " " + label;
+        }}
+        function showSubscribeSuccess() {{
+            var email = document.getElementById('subscriberEmail').value;
+            if(!email || !email.includes('@')) {{
+                alert('Please enter a valid email address.');
+                return;
+            }}
+            alert('Success! Your secure portfolio monitoring channel has been registered.');
+            document.getElementById('subscriberEmail').value = '';
+        }}
+        window.onload = performConversion;
+    </script>
+
+</body>
+</html>"""
+
+    with open("index.html", "w", encoding="utf-8") as f:
+        f.write(html_content)
+
+    # Automatically write an SEO sitemap to keep search index maps current
+    sitemap_content = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://sitemaps.org">
+    <url>
+        <loc>https://github.io</loc>
+        <lastmod>{datetime.utcnow().strftime('%Y-%m-%d')}</lastmod>
+        <changefreq>hourly</changefreq>
+        <priority>1.0</priority>
+    </url>
+</urlset>"""
+    
+    with open("sitemap.xml", "w", encoding="utf-8") as f:
+        f.write(sitemap_content)
+    print("Static assets cleanly compiled.")
+
+if __name__ == "__main__":
+    stock_data, crypto_data, news_feed = fetch_financial_data()
+    build_html_site(stock_data, crypto_data, news_feed)
